@@ -23,7 +23,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def compress(self):
-        compress = False
+        compressed = False
         response = requests.get(self.path)
         self.send_response(response.status_code)
         content = response.content
@@ -34,13 +34,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header(key, val)
                 if val.lower() in ('image/png', 'image/jpg'):
                     img = Image.open(BytesIO(response.content))
-                    compress = True
+                    compressed = True
                     if img.size[0] > IMG_X or img.size[1] > IMG_Y:
                         img.thumbnail((IMG_X, IMG_Y), Image.ANTIALIAS)
                         content = self.img_to_arr(img)
                         new_len = len(content)
             elif key.lower() in ('content-length', 'allow'):
-                if compress:
+                if compressed:
                     self.send_header(key, str(new_len))
                 else:
                     self.send_header(key, val)

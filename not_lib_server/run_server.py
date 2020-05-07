@@ -1,6 +1,5 @@
 import sys
-from http.server import HTTPServer
-from handler import Handler
+from not_lib_server.my_server import MyServer
 
 
 def main():
@@ -9,8 +8,8 @@ def main():
     else:
         print("wrong number of arguments")
         sys.exit(1)
-    server = HTTPServer(('', port), Handler)
-    server.serve_forever()
+    server = MyServer('', port)
+    server.run()
 
 
 if __name__ == '__main__':
