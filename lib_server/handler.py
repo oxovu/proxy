@@ -39,11 +39,13 @@ class Handler(BaseHTTPRequestHandler):
                         img.thumbnail((IMG_X, IMG_Y), Image.ANTIALIAS)
                         content = self.img_to_arr(img)
                         new_len = len(content)
-            elif key.lower() in ('content-length', 'allow'):
+            elif key.lower() == 'content-length':
                 if compressed:
                     self.send_header(key, str(new_len))
                 else:
                     self.send_header(key, val)
+            elif key.lower() == 'allow':
+                self.send_header(key, val)
         self.end_headers()
         return content
 

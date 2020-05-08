@@ -25,7 +25,7 @@ class MyServer():
                 print('CLIENT: ' + first_line)
                 first_line_sp = first_line.split(' ')
                 self.type = first_line_sp[0]
-                self.domain = first_line_sp[1]
+                self.url = first_line_sp[1]
                 self.version = first_line_sp[2]
                 if self.type == 'GET':
                     self.do_GET()
@@ -42,7 +42,7 @@ class MyServer():
 
     def compress_and_send(self):
         compressed = False
-        response = HttpUtils.my_get(self.domain)
+        response = HttpUtils.my_get(self.url)
         print("RESOURCE: " + response['path'])
         self.send_response(response['status_code'])
         content = response['content']
@@ -60,11 +60,13 @@ class MyServer():
                         img.thumbnail((IMG_X, IMG_Y), Image.ANTIALIAS)
                         content = self.img_to_arr(img)
                         new_len = len(content)
-            elif key.lower() in ('content-length', 'allow'):
+            elif key.lower() == 'content-length':
                 if compressed:
                     self.send_header(key, str(new_len))
                 else:
                     self.send_header(key, val)
+            elif key.lower() == 'allow':
+                self.send_header(key, val)
         self.send_all(content)
 
     def img_to_arr(self, img):
@@ -90,18 +92,18 @@ class HttpUtils():
     def receive_all(sock, timeout):
         try:
             sock.settimeout(timeout)
-            all_data = b''
+            text_data = b''
             while 1:
                 next_byte = sock.recv(1)
-                all_data += next_byte
-                if len(all_data) == 0:
+                text_data += next_byte
+                if len(text_data) == 0:
                     break
-                if chr(all_data[-1]) == '\n' \
-                        and chr(all_data[-2]) == '\r' \
-                        and chr(all_data[-3]) == '\n' \
-                        and chr(all_data[-4]) == '\r':
+                if chr(text_data[-1]) == '\n' \
+                        and chr(text_data[-2]) == '\r' \
+                        and chr(text_data[-3]) == '\n' \
+                        and chr(text_data[-4]) == '\r':
 
-                    path, headers = HttpUtils.parse_http(all_data.decode())
+                    path, headers = HttpUtils.parse_http(text_data.decode())
                     data = b''
                     if 'Content-Length' in headers.keys():
                         while int(headers['Content-Length']) > len(data):
